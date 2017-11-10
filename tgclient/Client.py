@@ -34,8 +34,8 @@ class TelegramBot:
 
     def _req(self, method, data, files=None):
 
-        if 'reply_markup' in data and isinstance(data['reply_markup'], dict):
-            data['replay_markup'] = json.dumps(data['reply_markup'])
+        if 'reply_markup' in data and data['reply_markup']:
+            data['reply_markup'] = json.dumps(data['reply_markup'])
 
         if files is not None:
 
