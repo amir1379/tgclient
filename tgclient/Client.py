@@ -7,9 +7,11 @@ import requests
 import re
 import json
 import six
+import threading
+
 
 class TelegramBot:
-    def __init__(self, token):
+    def __init__(self, token, threading_updates=False):
         self.token = token
         self._commands = {}
         self._handler = {}
@@ -19,14 +21,22 @@ class TelegramBot:
         self._edited_message = []
         self._channel_post = []
         self._edited_channel_post = []
+        self._threading = threading_updates
+
 
     def get_token(self):
         return self.token
 
+
     def set_token(self, token):
         self.token = token
 
+
     def _req(self, method, data, files=None):
+
+        if 'reply_markup' in data and isinstance(data['reply_markup'], dict):
+            data['replay_markup'] = json.dumps(data['reply_markup'])
+
         if files is not None:
 
             request = requests.post("https://api.telegram.org/bot{}/{}".format(self.token, method),
@@ -45,12 +55,14 @@ class TelegramBot:
             else:
                 print("Error HTTP : {}\n{}".format(request.status_code, request.content))
 
+
     def command(self, regex):
 
         def decorator(d):
             self._commands[regex] = d
 
         return decorator
+
 
     def message(self, type_message):
 
@@ -59,11 +71,13 @@ class TelegramBot:
 
         return decorator
 
+
     def callback_query(self):
         def decorator(d):
             self._callback_handler.append(d)
 
         return decorator
+
 
     def inline_query(self):
 
@@ -72,12 +86,14 @@ class TelegramBot:
 
         return decorator
 
+
     def edited_message(self):
 
         def decorator(d):
             self._edited_message.append(d)
 
         return decorator
+
 
     def edited_channel_post(self):
 
@@ -86,6 +102,7 @@ class TelegramBot:
 
         return decorator
 
+
     def channel_post(self):
 
         def decorator(d):
@@ -93,8 +110,10 @@ class TelegramBot:
 
         return decorator
 
+
     def getMe(self):
         return self._req("getMe", {})
+
 
     def sendMessage(self, chat_id, text, parse_mode=None, disable_web_page_preview=None,
                     disable_notification=None, reply_to_message_id=None, reply_markup=None):
@@ -117,9 +136,10 @@ class TelegramBot:
             query['reply_to_message_id'] = reply_to_message_id
 
         if reply_markup:
-            query['reply_markup'] = json.dumps(reply_markup)
+            query['reply_markup'] = reply_markup
 
         return self._req("sendMessage", query)
+
 
     def sendPhoto(self, chat_id, photo, caption=None, disable_notification=None,
                   reply_to_message_id=None, reply_markup=None):
@@ -145,9 +165,10 @@ class TelegramBot:
             query['reply_to_message_id'] = reply_to_message_id
 
         if reply_markup:
-            query['reply_markup'] = json.dumps(reply_markup)
+            query['reply_markup'] = reply_markup
 
         return self._req("sendPhoto", query, files)
+
 
     def getUpdates(self, offset=0, limit=0, timeout=0, allowed_updates=None):
 
@@ -212,7 +233,7 @@ class TelegramBot:
             query['reply_to_message_id'] = reply_to_message_id
 
         if reply_markup:
-            query['reply_markup'] = json.dumps(reply_markup)
+            query['reply_markup'] = reply_markup
 
         return self._req("sendAudio", query, files)
 
@@ -240,7 +261,7 @@ class TelegramBot:
             query['reply_to_message_id'] = reply_to_message_id
 
         if reply_markup:
-            query['reply_markup'] = json.dumps(reply_markup)
+            query['reply_markup'] = reply_markup
 
         return self._req("sendDocument", query, files)
 
@@ -263,6 +284,7 @@ class TelegramBot:
 
         return self._req("answerCallbackQuery", query)
 
+
     def sendSticker(self, chat_id, sticker, disable_notification=False, reply_to_message_id=None,
                     reply_markup=None):
 
@@ -282,9 +304,10 @@ class TelegramBot:
             query['reply_to_message_id'] = reply_to_message_id
 
         if reply_markup:
-            query['reply_markup'] = json.dumps(reply_markup)
+            query['reply_markup'] = reply_markup
 
         return self._req("sendSticker", query, files)
+
 
     def sendVoice(self, chat_id, voice, caption=None, duration=None,
                   disable_notification=None, reply_to_message_id=None, reply_markup=None):
@@ -312,9 +335,10 @@ class TelegramBot:
             query['reply_to_message_id'] = reply_to_message_id
 
         if reply_markup:
-            query['reply_markup'] = json.dumps(reply_markup)
+            query['reply_markup'] = reply_markup
 
         return self._req("sendVoice", query, files)
+
 
     def sendVideoNote(self, chat_id, video_note, duration=None, length=None, disable_notification=None,
                       reply_to_message_id=None, reply_markup=None):
@@ -348,6 +372,43 @@ class TelegramBot:
 
         return self._req("sendVideoNote", query, files)
 
+
+    def sendVideo(self, chat_id, video, duration=None, width=None, height=None,
+                  caption=None, disable_notification=None, reply_to_message_id=None,
+                  reply_markup=None):
+
+        query = {}
+        files = {}
+        if chat_id and video:
+            query['chat_id'] = chat_id
+            if isinstance(video, six.string_types):
+                query['video'] = chat_id
+            else:
+                files['video'] = video
+
+        if duration:
+            query['duration'] = duration
+
+        if width:
+            query['width'] = width
+
+        if height:
+            query['height'] = height
+
+        if caption:
+            query['caption'] = caption
+
+        if disable_notification:
+            query['disable_notification'] = disable_notification
+
+        if reply_to_message_id:
+            query['reply_to_message_id'] = reply_to_message_id
+
+        if reply_markup:
+            query['reply_markup'] = reply_markup
+
+        return self._req("sendVideo", query, files)
+
     def sendLocation(self, chat_id, latitude, longitude, disable_notification=None,
                      reply_to_message_id=None, reply_markup=None):
 
@@ -365,9 +426,10 @@ class TelegramBot:
             query['reply_to_message_id'] = reply_to_message_id
 
         if reply_markup:
-            query['reply_markup'] = json.dumps(reply_markup)
+            query['reply_markup'] = reply_markup
 
         return self._req("sendLocation", query)
+
 
     def sendVenue(self, chat_id, latitude, longitude, title, address,
                   foursquare_id=None, disable_notification=False, reply_to_message_id=0,
@@ -390,9 +452,10 @@ class TelegramBot:
         if reply_to_message_id:
             query['reply_to_message_id'] = reply_to_message_id
         if reply_markup:
-            query['reply_markup'] = json.dumps(reply_markup)
+            query['reply_markup'] = reply_markup
 
         return self._req("sendVenue", query)
+
 
     def sendContact(self, chat_id, phone_number, first_name,
                     last_name=None, disable_notification=False, reply_to_message_id=0,
@@ -412,9 +475,10 @@ class TelegramBot:
         if reply_to_message_id:
             query['reply_to_message_id'] = reply_to_message_id
         if reply_markup:
-            query['reply_markup'] = json.dumps(reply_markup)
+            query['reply_markup'] = reply_markup
 
         return self._req("sendContact", query)
+
 
     def sendChatAction(self, chat_id, action):
 
@@ -424,6 +488,7 @@ class TelegramBot:
             query['action'] = action
 
         return self._req("sendChatAction", query)
+
 
     def getUserProfilePhotos(self, user_id, offset=0, limit=0):
 
@@ -450,7 +515,6 @@ class TelegramBot:
         return self._req("getFile", query)
 
 
-
     def kickChatMember(self, chat_id, user_id):
 
         query = {}
@@ -461,6 +525,7 @@ class TelegramBot:
 
         return self._req("kickChatMember", query)
 
+
     def unbanChatMember(self, chat_id, user_id):
 
         query = {}
@@ -470,6 +535,11 @@ class TelegramBot:
             query['user_id'] = user_id
 
         return self._req("unbanChatMember", query)
+
+
+    def deleteChatStickerSet(self, chat_id):
+        return self._req("deleteChatStickerSet", {'chat_id': chat_id})
+
 
     def restrictChatMember(self, chat_id, user_id, until_date=0, can_send_messages=False,
                            can_send_media_messages=False, can_send_other_messages=False,
@@ -497,6 +567,12 @@ class TelegramBot:
             query['can_send_messages'] = can_send_messages
 
         return self._req("restrictChatMember", query)
+
+
+    def setChatStickerSet(self, chat_id, sticker_set_name):
+        if isinstance(sticker_set_name, str):
+            return self._req("setChatStickerSet", {'chat_id': chat_id, 'sticker_set_name': sticker_set_name})
+
 
     def promoteChatMember(self, chat_id, user_id, can_change_info=False,
                           can_post_messages=False, can_edit_messages=False,
@@ -540,6 +616,7 @@ class TelegramBot:
 
         return self._req("exportChatInviteLink", {'chat_id': chat_id})
 
+
     def setChatPhoto(self, chat_id, photo):
 
         query = {}
@@ -554,9 +631,11 @@ class TelegramBot:
 
         return self._req("setChatPhoto", query, files)
 
+
     def deleteChatPhoto(self, chat_id):
 
         return self._req("deleteChatPhoto", {'chat_id': chat_id})
+
 
     def setChatTitle(self, chat_id, title):
 
@@ -570,6 +649,7 @@ class TelegramBot:
                 'chat_id': chat_id,
                 'description': description
             })
+
 
     def pinChatMessage(self, chat_id, message_id, disable_notification=False):
 
@@ -589,21 +669,26 @@ class TelegramBot:
 
         return self._req("unpinChatMessage", {'chat_id': chat_id})
 
+
     def leaveChat(self, chat_id):
 
         return self._req("leaveChat", {'chat_id': chat_id})
+
 
     def getChat(self, chat_id):
 
         return self._req("getChat", {'chat_id': chat_id})
 
+
     def getChatAdministrators(self, chat_id):
 
         return self._req("getChatAdministrators", {'chat_id': chat_id})
 
+
     def getChatMembersCount(self, chat_id):
 
         return self._req("getChatMembersCount", {'chat_id': chat_id})
+
 
     def getChatMember(self, chat_id, user_id):
 
@@ -632,9 +717,10 @@ class TelegramBot:
             query['disable_web_page_preview'] = disable_web_page_preview
 
         if reply_markup:
-            query['reply_markup'] = json.dumps(reply_markup)
+            query['reply_markup'] = reply_markup
 
         return self._req("editMessageText", query)
+
 
     def editMessageCaption(self, chat_id=None, message_id=None,
                            inline_message_id=None, caption=None,
@@ -652,9 +738,10 @@ class TelegramBot:
             query['caption'] = caption
 
         if reply_markup:
-            query['reply_markup'] = json.dumps(reply_markup)
+            query['reply_markup'] = reply_markup
 
         return self._req("editMessageCaption", query)
+
 
     def editMessageReplyMarkup(self, chat_id=None, message_id=None, inline_message_id=None,
                                reply_markup=None):
@@ -668,9 +755,10 @@ class TelegramBot:
             query['inline_message_id'] = inline_message_id
 
         if reply_markup:
-            query['reply_markup'] = json.dumps(reply_markup)
+            query['reply_markup'] = reply_markup
 
         return self._req("editMessageReplyMarkup", query)
+
 
     def deleteMessage(self, chat_id, message_id):
 
@@ -678,6 +766,7 @@ class TelegramBot:
             'chat_id': chat_id,
             'message_id': message_id
         })
+
 
     def answerInlineQuery(self, inline_query_id, results,
                           cache_time=None, is_personal=None, next_offset=None, switch_pm_text=None,
@@ -708,8 +797,6 @@ class TelegramBot:
         return self._req("answerInlineQuery", query)
 
 
-
-
     def run(self, report_http_errors=True):
 
         if not report_http_errors:
@@ -724,42 +811,47 @@ class TelegramBot:
                     if 'update_id' in result and result['update_id'] > offset:
                         offset = result['update_id']
 
-                        if 'message' in result:
-                            if 'text' in result['message']:
-                                for k, v in self._commands.items():
+                        def response_update():
+                            if 'message' in result:
+                                if 'text' in result['message']:
+                                    for k, v in self._commands.items():
 
-                                    regex = re.compile(k, flags=re.MULTILINE | re.DOTALL)
-                                    m = regex.match(result['message']['text'])
+                                        regex = re.compile(k, flags=re.MULTILINE | re.DOTALL)
+                                        m = regex.match(result['message']['text'])
 
-                                    if m:
-                                        match_list = []
-                                        for x in m.groups():
-                                            match_list.append(x)
-                                        try:
-                                            v(result['message'], match_list)
-                                        except TypeError:
-                                            v(result['message'])
+                                        if m:
+                                            match_list = []
+                                            for x in m.groups():
+                                                match_list.append(x)
+                                            try:
+                                                v(result['message'], match_list)
+                                            except TypeError:
+                                                v(result['message'])
 
-                            for k, v in self._handler.items():
-                                if k in result['message']:
-                                    v(result['message'])
+                                for k, v in self._handler.items():
+                                    if k in result['message']:
+                                        v(result['message'])
 
-                        elif 'callback_query' in result:
-                            for v in self._callback_handler:
-                                v(result['callback_query'])
+                            elif 'callback_query' in result:
+                                for v in self._callback_handler:
+                                    v(result['callback_query'])
 
-                        elif 'inline_query' in result:
-                            for v in self._inline_handler:
-                                v(result['inline_query'])
+                            elif 'inline_query' in result:
+                                for v in self._inline_handler:
+                                    v(result['inline_query'])
 
-                        elif 'channel_post' in result:
-                            for v in self._channel_post:
-                                v(result['channel_post'])
+                            elif 'channel_post' in result:
+                                for v in self._channel_post:
+                                    v(result['channel_post'])
 
-                        elif 'edited_message' in result:
-                            for v in self._edited_message:
-                                v(result['edited_message'])
+                            elif 'edited_message' in result:
+                                for v in self._edited_message:
+                                    v(result['edited_message'])
 
-                        elif 'edited_channel_post' in result:
-                            for v in self._edited_channel_post:
-                                v(result['edited_channel_post'])
+                            elif 'edited_channel_post' in result:
+                                for v in self._edited_channel_post:
+                                    v(result['edited_channel_post'])
+                        if self._threading:
+                            threading.Thread(target=response_update).start()
+                        else:
+                            response_update()
