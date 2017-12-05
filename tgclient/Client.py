@@ -382,7 +382,7 @@ class TelegramBot:
         if chat_id and video:
             query['chat_id'] = chat_id
             if isinstance(video, six.string_types):
-                query['video'] = chat_id
+                query['video'] = video
             else:
                 files['video'] = video
 
