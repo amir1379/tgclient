@@ -8,15 +8,9 @@ Telegram Api Client
 
 ## Install
 ```sh
-pip install tgclient
-
-or
-
 git clone https://github.com/negative23/tgclient.git
-cd tgclient 
-
+cd tgclient
 python setup.py install
-
 ```
 
 
@@ -51,4 +45,4 @@ def text(message, args):
     bot.sendMessage(message['chat']['id'], args[1])
 
 bot.run()
-
+```
