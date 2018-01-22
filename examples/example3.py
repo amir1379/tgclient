@@ -13,8 +13,6 @@ def delete_message(message):
 
     req = bot.sendMessage(message['chat']['id'], ":D Test!")
 
-    # req return : https://core.telegram.org/bots/api#message
-
     time.sleep(1)
 
     if 'message_id' in req:
