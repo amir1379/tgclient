@@ -1,7 +1,6 @@
 import urllib3
 import re
 import json
-import six
 import threading
 import io
 import json
