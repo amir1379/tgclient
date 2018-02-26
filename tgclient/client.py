@@ -986,4 +986,5 @@ class TelegramBot:
                             q.put(result)
 
         except KeyboardInterrupt:
-            q.task_done()
+            for _ in range(num_workers):
+                q.task_done()
