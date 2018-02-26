@@ -31,5 +31,5 @@ def on_photo(message):
     photosize = message['photo']
 
     bot.sendPhoto(message['chat']['id'],
-                  large_photo(photosize)['file_id'],
+                  photosize[len(photosize) - 1]['file_id'],
                   'Hello :D')

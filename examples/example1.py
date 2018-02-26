@@ -12,12 +12,16 @@ def start(message, args):
     bot.sendMessage(message['chat']['id'], "Hello", reply_markup={
         'inline_keyboard': [
             [
-                InlineKeyboard(text="Hello", callback_data="1"),
-                InlineKeyboard(text="Hello", callback_data="2")
+                {'text': "Hello, World", 'callback_data': '.'},
+                {'text': "Hello, World", 'callback_data': '.'},
+                {'text': "Hello, World", 'callback_data': '.'}
             ],
             [
-                InlineKeyboard(text="Hi", callback_data="3"),
-                InlineKeyboard(text="Hi", callback_data="4")
+                {'text': "Hello, World", 'callback_data': '.'},
+            ],
+            [
+                {'text': "Hello, World", 'callback_data': '.'},
+                {'text': "Hello, World", 'callback_data': '.'}
             ]
         ]
     })
@@ -38,9 +42,14 @@ def pin_message(message):
 def inline_query(inline):
 
     bot.answerInlineQuery(inline['id'], results=[
-
-        InlineQueryResult(type="article", id='1', input_message_content=input_message_content("Hello"),
-                          title="Hi")
+        {
+            'type': 'article',
+            'id': '1',
+            'title': "Hello, World",
+            'input_message_content': {
+                'message_text': "Hello, World"
+            }
+        }
     ])
 
 @bot.callback_query()
