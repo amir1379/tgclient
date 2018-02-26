@@ -10,6 +10,7 @@ from queue import Queue
 
 class TelegramBot:
     def __init__(self, token):
+
         self.token = token
         self._commands = {}
         self._handler = {}
@@ -20,6 +21,7 @@ class TelegramBot:
         self._edited_channel_post = []
         self._report_http_err = True
 
+        urllib3.disable_warnings()
         self._telegram_connection = urllib3.HTTPSConnectionPool('api.telegram.org', timeout=1000000)
 
     def _req(self, method, data):
