@@ -439,27 +439,6 @@ class TelegramBot:
 
         return self._req("sendLocation", query)
 
-    def send_location_response(self, chat_id, latitude, longitude, disable_notification=None,
-                              reply_to_message_id=None, reply_markup=None):
-
-        query = {}
-        if chat_id and latitude and longitude:
-            query['chat_id'] = chat_id
-            query['latitude'] = latitude
-            query['longitude'] = longitude
-
-        if disable_notification:
-            query['disable_notification'] = disable_notification
-
-        if reply_to_message_id:
-            query['reply_to_message_id'] = reply_to_message_id
-
-        if reply_markup:
-            query['reply_markup'] = reply_markup
-
-        query['method'] = 'sendLocation'
-        return Response(json.dumps(query), status=200, content_type='application/json')
-
     def sendVenue(self, chat_id, latitude, longitude, title, address,
                   foursquare_id=None, disable_notification=False, reply_to_message_id=0,
                   reply_markup=None):
@@ -927,46 +906,50 @@ class TelegramBot:
         def workers(queue):
             while True:
                 data = queue.get()
-                if isinstance(data, dict):
-                    if 'message' in result:
-                        if 'text' in result['message']:
-                            for k, v in self._commands.items():
+                if data is not None:
+                    if isinstance(data, dict):
+                        if 'message' in result:
+                            if 'text' in result['message']:
+                                for k, v in self._commands.items():
 
-                                regex = re.compile(k, flags=re.MULTILINE | re.DOTALL)
-                                m = regex.match(result['message']['text'])
+                                    regex = re.compile(k, flags=re.MULTILINE | re.DOTALL)
+                                    m = regex.match(result['message']['text'])
 
-                                if m is not None:
-                                    match_list = []
-                                    for x in m.groups():
-                                        match_list.append(x)
-                                    try:
-                                        v(result['message'], match_list)
-                                    except TypeError:
-                                        v(result['message'])
+                                    if m is not None:
+                                        match_list = []
+                                        for x in m.groups():
+                                            match_list.append(x)
+                                        try:
+                                            v(result['message'], match_list)
+                                        except TypeError:
+                                            v(result['message'])
 
-                        for k, v in self._handler.items():
-                            if k in result['message']:
-                                v(result['message'])
+                            for k, v in self._handler.items():
+                                if k in result['message']:
+                                    v(result['message'])
 
-                    elif 'callback_query' in result:
-                        for v in self._callback_handler:
-                            v(result['callback_query'])
+                        elif 'callback_query' in result:
+                            for v in self._callback_handler:
+                                v(result['callback_query'])
 
-                    elif 'inline_query' in result:
-                        for v in self._inline_handler:
-                            v(result['inline_query'])
+                        elif 'inline_query' in result:
+                            for v in self._inline_handler:
+                                v(result['inline_query'])
 
-                    elif 'channel_post' in result:
-                        for v in self._channel_post:
-                            v(result['channel_post'])
+                        elif 'channel_post' in result:
+                            for v in self._channel_post:
+                                v(result['channel_post'])
 
-                    elif 'edited_message' in result:
-                        for v in self._edited_message:
-                            v(result['edited_message'])
+                        elif 'edited_message' in result:
+                            for v in self._edited_message:
+                                v(result['edited_message'])
 
-                    elif 'edited_channel_post' in result:
-                        for v in self._edited_channel_post:
-                            v(result['edited_channel_post'])
+                        elif 'edited_channel_post' in result:
+                            for v in self._edited_channel_post:
+                                v(result['edited_channel_post'])
+
+                else:
+                    break
 
         for _ in range(num_workers):
             t = threading.Thread(target=workers, args=(q, ))
@@ -986,5 +969,4 @@ class TelegramBot:
                             q.put(result)
 
         except KeyboardInterrupt:
-            for _ in range(num_workers):
-                q.task_done()
+            q.task_done()
