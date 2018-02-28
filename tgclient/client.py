@@ -37,7 +37,7 @@ class TelegramBot:
         )
 
         if request.status == 200:
-            return json.loads(request.data.decode('utf-8')['result']
+            return json.loads(request.data.decode('utf-8'))['result']
         else:
             if self._report_http_err:
                 raise Exception("HTTP Error : {} : {}".format(request.status, request.data.decode('utf-8')))
