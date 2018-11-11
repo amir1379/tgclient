@@ -3,13 +3,13 @@ from setuptools import setup
 
 
 setup(
-    name="tgclient",
-    packages=['tgclient'],
-    version='1.5.1',
+    name="tgclientpro",
+    packages=['tgclientpro'],
+    version='1.5.2',
     description='Telegram Bot Api Client',
-    author='Negative',
+    author='amirfrd',
     author_email='negative.officiall@gmail.com',
-    url='https://github.com/amir1379/tgclient',
+    url='https://github.com/amir1379/tgclientpro',
     install_requires=['urllib3'],
     keywords='telegram bot api',
     license='GPL2',

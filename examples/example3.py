@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from tgclient import *
+from tgclientpro import *
 import time
 
 
