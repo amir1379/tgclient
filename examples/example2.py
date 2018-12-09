@@ -7,7 +7,7 @@ InputFile : open('path', 'rb') or string file_id
 
 """
 
-from tgclientpro import *
+from tgclient import *
 
 token = "your token"
 
