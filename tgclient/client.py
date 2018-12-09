@@ -1,6 +1,5 @@
 import urllib3
 import re
-import json
 import threading
 import io
 import json
@@ -28,7 +27,6 @@ class TelegramBot:
 
         if 'reply_markup' in data and data['reply_markup']:
             data['reply_markup'] = json.dumps(data['reply_markup'])
-
 
         request = self._telegram_connection.request(
             'POST',
@@ -270,7 +268,7 @@ class TelegramBot:
     def answerCallbackQuery(self, callback_query_id, text, show_alert=False, url=None, cache_time=None):
 
         query = {}
-        
+
         if callback_query_id and text:
             query['callback_query_id'] = callback_query_id
             query['text'] = text
@@ -325,7 +323,7 @@ class TelegramBot:
 
         elif isinstance(voice, io.BufferedReader):
             query['voice'] = (voice.name, voice.read())
-        
+
         elif isinstance(voice, str):
             query['voice'] = voice
 
@@ -419,7 +417,7 @@ class TelegramBot:
                      reply_to_message_id=None, reply_markup=None):
 
         query = {}
-        
+
         if chat_id and latitude and longitude:
             query['chat_id'] = chat_id
             query['latitude'] = latitude
@@ -444,9 +442,8 @@ class TelegramBot:
                   reply_markup=None):
 
         query = {}
-        
-        if chat_id and latitude and longitude and title and address:
 
+        if chat_id and latitude and longitude and title and address:
             query['chat_id'] = chat_id
             query['latitude'] = latitude
             query['longitude'] = longitude
@@ -471,7 +468,6 @@ class TelegramBot:
         query = {}
 
         if chat_id and latitude and longitude and title and address:
-
             query['chat_id'] = chat_id
             query['latitude'] = latitude
             query['longitude'] = longitude
@@ -576,7 +572,6 @@ class TelegramBot:
         if chat_id and user_id:
             query['chat_id'] = chat_id
             query['user_id'] = user_id
-
 
         if until_date:
             query['until_date'] = until_date
@@ -894,7 +889,6 @@ class TelegramBot:
         if is_personal is not None:
             query['is_personal'] = is_personal
 
-
         return self._req("answerInlineQuery", query)
 
     def run(self, report_http_errors=True, num_workers=1, timeout=10):
@@ -952,7 +946,7 @@ class TelegramBot:
                     break
 
         for _ in range(num_workers):
-            t = threading.Thread(target=workers, args=(q, ))
+            t = threading.Thread(target=workers, args=(q,))
             t.daemon = True
             t.start()
 
